@@ -1,0 +1,35 @@
+name: Actualizar áreas de incendios (EFFIS)
+
+on:
+  schedule:
+    - cron: '30 5 * * *'   # 05:30 UTC ≈ 07:30 hora española en verano
+  workflow_dispatch:        # permite lanzarlo a mano desde la pestaña Actions
+
+permissions:
+  contents: write
+
+jobs:
+  actualizar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20     # margen para reintentos + descarga de ~220 MB
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Instalar dependencias
+        run: pip install -r requirements.txt
+
+      - name: Generar geojson desde EFFIS
+        run: python3 generar_areas.py
+
+      - name: Commit y push si hay cambios
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add incendios_areas_2026.geojson
+          git diff --staged --quiet || git commit -m "Actualiza áreas de incendios EFFIS $(date -u +'%Y-%m-%d')"
+          git push

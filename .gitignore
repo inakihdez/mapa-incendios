@@ -1,0 +1,6 @@
+descarga_effis.zip
+effis_extraido/
+diagnostico.py
+diagnostico2.py
+__pycache__/
+*.pyc
